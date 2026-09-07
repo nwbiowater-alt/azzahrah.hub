@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koperasi Simpan Pinjam Azzahrah</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            display: inline-block;
+            animation: marquee 25s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col pb-20 md:pb-0">
+
+    <!-- Login Screen Overlay -->
+    <div id="login-screen" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6">
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 bg-gradient-to-tr from-emerald-600 to-teal-500 text-white rounded-3xl flex items-center justify-center text-2xl mx-auto shadow-lg shadow-emerald-900/30">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+                <h2 class="text-2xl font-extrabold text-white">Login KSP Azzahrah</h2>
+                <p class="text-xs text-slate-400">Pilih peran dan masukkan password untuk masuk.</p>
+            </div>
+
+            <!-- Role Selector Tabs -->
+            <div class="grid grid-cols-2 gap-2 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+                <button type="button" onclick="setLoginRole('admin')" id="login-tab-admin" class="py-2.5 rounded-xl text-xs font-extrabold transition bg-emerald-600 text-white shadow cursor-pointer">Administrator</button>
+                <button type="button" onclick="setLoginRole('petugas')" id="login-tab-petugas" class="py-2.5 rounded-xl text-xs font-extrabold transition text-slate-400 hover:text-white cursor-pointer">Petugas Lapangan</button>
+            </div>
+
+            <!-- Form Login -->
+            <form id="form-login-admin" onsubmit="prosesLoginSistem(event)" class="space-y-4">
+                <div>
+                    <label id="label-password-login" class="block text-xs font-bold text-slate-300 mb-1.5">Password Administrator</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <input type="password" id="admin-password" required class="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-extrabold py-3.5 rounded-2xl transition shadow-xl text-sm flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Navbar / Header -->
+    <header class="bg-slate-950/85 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3.5 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-11 h-11 bg-gradient-to-tr from-emerald-600 to-teal-500 text-white rounded-2xl flex items-center justify-center font-extrabold text-xl shadow-lg shadow-emerald-900/30">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-base sm:text-lg tracking-tight bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">KSP Azzahrah</h1>
+                    <p id="header-role-badge" class="text-[11px] text-emerald-400 font-bold">Administrator Utama</p>
+                </div>
+            </div>
+            
+            <!-- Desktop Nav -->
+            <nav id="desktop-nav-container" class="hidden md:flex space-x-1 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 text-sm font-semibold">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-4 py-2 rounded-xl transition text-emerald-400 bg-emerald-950/50">Dashboard</button>
+                <button onclick="switchTab('simulasi')" id="nav-simulasi" class="px-4 py-2 rounded-xl transition text-slate-400 hover:text-white">Form & Kalkulator</button>
+                <button onclick="switchTab('nasabah')" id="nav-nasabah" class="px-4 py-2 rounded-xl transition text-slate-400 hover:text-white">Data Nasabah</button>
+            </nav>
+
+            <div class="flex items-center space-x-3">
+                <span class="hidden sm:flex text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-full font-bold items-center gap-1.5">
+                    <i class="fa-solid fa-circle text-[6px] animate-pulse"></i> Web App Active
+                </span>
+                <button onclick="logoutSistem()" class="bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white border border-rose-500/30 px-3 py-1.5 rounded-xl text-xs font-extrabold transition flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-right-from-bracket"></i> Keluar
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
+
+        <!-- Running Text Ticker Harian -->
+        <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-emerald-500/30 rounded-2xl p-3 overflow-hidden shadow-xl flex items-center gap-3">
+            <div class="bg-emerald-500 text-slate-950 text-[10px] font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider shrink-0 flex items-center gap-1">
+                <i class="fa-solid fa-bolt"></i> Info Live
+            </div>
+            <div class="overflow-hidden whitespace-nowrap relative w-full">
+                <div id="running-text" class="animate-marquee text-xs font-bold text-emerald-300">
+                    Memuat informasi real-time dari database web...
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 1: DASHBOARD -->
+        <section id="tab-dashboard" class="space-y-6">
+            <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 rounded-3xl p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="relative z-10 space-y-3">
+                    <span id="welcome-badge" class="bg-emerald-500/40 border border-emerald-400/30 text-emerald-100 text-xs px-3 py-1 rounded-full font-bold inline-block">Aplikasi Web Koperasi Profesional</span>
+                    <h2 id="welcome-title" class="text-2xl sm:text-3xl font-extrabold tracking-tight">Koperasi Azzahrah Web</h2>
+                    <p id="welcome-desc" class="text-emerald-100 text-xs sm:text-sm max-w-xl leading-relaxed font-medium">Kelola pinjaman, simpanan pokok, simpanan wajib, jasa, dan pencairan dana nasabah dengan antarmuka web modern yang sinkron otomatis.</p>
+                </div>
+            </div>
+
+            <!-- Dashboard Realtime Stats Grid -->
+            <div id="stats-grid-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div class="bg-slate-950/60 backdrop-blur-md p-5 rounded-3xl border border-slate-800 shadow-xl space-y-2">
+                    <div class="w-10 h-10 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-lg border border-blue-500/20">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                        <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Nasabah</p>
+                        <p id="stat-total-nasabah" class="text-2xl font-extrabold text-white mt-0.5">0</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/60 backdrop-blur-md p-5 rounded-3xl border border-slate-800 shadow-xl space-y-2">
+                    <div class="w-10 h-10 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-lg border border-emerald-500/20">
+                        <i class="fa-solid fa-calendar-day"></i>
+                    </div>
+                    <div>
+                        <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Angsuran / Hari</p>
+                        <p id="stat-angsuran-hari" class="text-xl font-extrabold text-emerald-400 mt-0.5">Rp 0</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/60 backdrop-blur-md p-5 rounded-3xl border border-slate-800 shadow-xl space-y-2">
+                    <div class="w-10 h-10 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-lg border border-amber-500/20">
+                        <i class="fa-solid fa-vault"></i>
+                    </div>
+                    <div>
+                        <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Pinjaman</p>
+                        <p id="stat-total-pinjaman" class="text-xl font-extrabold text-amber-400 mt-0.5">Rp 0</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/60 backdrop-blur-md p-5 rounded-3xl border border-slate-800 shadow-xl space-y-2">
+                    <div class="w-10 h-10 bg-cyan-500/10 text-cyan-400 rounded-2xl flex items-center justify-center text-lg border border-cyan-500/20">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Simpanan Pokok</p>
+                        <p id="stat-total-simpanan-pokok" class="text-xl font-extrabold text-cyan-400 mt-0.5">Rp 0</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/60 backdrop-blur-md p-5 rounded-3xl border border-slate-800 shadow-xl space-y-2">
+                    <div class="w-10 h-10 bg-teal-500/10 text-teal-400 rounded-2xl flex items-center justify-center text-lg border border-teal-500/20">
+                        <i class="fa-solid fa-piggy-bank"></i>
+                    </div>
+                    <div>
+                        <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Simpanan Wajib</p>
+                        <p id="stat-total-simpanan" class="text-xl font-extrabold text-teal-400 mt-0.5">Rp 0</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/60 backdrop-blur-md p-5 rounded-3xl border border-slate-800 shadow-xl space-y-2 col-span-2 md:col-span-1 lg:col-span-1">
+                    <div class="w-10 h-10 bg-purple-500/10 text-purple-400 rounded-2xl flex items-center justify-center text-lg border border-purple-500/20">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Jasa</p>
+                        <p id="stat-total-jasa" class="text-xl font-extrabold text-purple-400 mt-0.5">Rp 0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Action Cards -->
+            <div id="quick-action-cards" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div onclick="switchTab('simulasi')" class="bg-slate-950/60 p-6 rounded-3xl border border-slate-800 hover:border-emerald-500/50 transition cursor-pointer group shadow-xl flex items-center gap-4">
+                    <div class="w-14 h-14 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl group-hover:bg-emerald-600 group-hover:text-white transition shrink-0 border border-emerald-500/20">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-white">Input Nasabah & Kalkulator</h3>
+                        <p class="text-slate-400 text-xs mt-0.5">Pendaftaran anggota baru dengan kalkulasi otomatis simpanan, jasa & admin.</p>
+                    </div>
+                </div>
+
+                <div onclick="switchTab('nasabah')" class="bg-slate-950/60 p-6 rounded-3xl border border-slate-800 hover:border-teal-500/50 transition cursor-pointer group shadow-xl flex items-center gap-4">
+                    <div class="w-14 h-14 bg-teal-500/10 text-teal-400 rounded-2xl flex items-center justify-center text-2xl group-hover:bg-teal-600 group-hover:text-white transition shrink-0 border border-teal-500/20">
+                        <i class="fa-solid fa-address-book"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-white">Kelola Data & Angsuran</h3>
+                        <p class="text-slate-400 text-xs mt-0.5">Lihat daftar anggota, input pembayaran angsuran, dan ekspor/impor Excel.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: KALKULATOR & FORM INPUT NASABAH -->
+        <section id="tab-simulasi" class="hidden space-y-6">
+            <div class="bg-slate-950/80 backdrop-blur-md rounded-3xl shadow-2xl border border-slate-800 p-6 sm:p-8">
+                <div class="border-b border-slate-800 pb-4 mb-6">
+                    <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Formulir Web Resmi</span>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-white mt-1">Pendaftaran & Kalkulator Pinjaman</h2>
+                    <p class="text-xs sm:text-sm text-slate-400">Pilih pinjaman (600rb / 1.2jt), tenor (20 / 24 hari), simpanan pokok, dan simpan otomatis ke database.</p>
+                </div>
+
+                <form id="form-nasabah" onsubmit="simpanNasabah(event)" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="space-y-5">
+                        <h3 class="font-bold text-emerald-400 text-sm border-l-4 border-emerald-500 pl-3 uppercase tracking-wider">Identitas & Foto Anggota</h3>
+                        
+                        <div>
+                            <label class="block text-xs sm:text-sm font-bold text-slate-300 mb-1.5">Nama Lengkap Nasabah</label>
+                            <input type="text" id="nama" required class="w-full px-4 py-3 rounded-2xl border border-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm bg-slate-900 text-white font-medium" placeholder="Contoh: Siti Aminah">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs sm:text-sm font-bold text-slate-300 mb-1.5">Nomor Telepon / WhatsApp</label>
+                            <input type="tel" id="telepon" required class="w-full px-4 py-3 rounded-2xl border border-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm bg-slate-900 text-white font-medium" placeholder="Contoh: 08123456789">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs sm:text-sm font-bold text-slate-300 mb-1.5">Foto Anggota (Kamera / Galeri)</label>
+                            <div class="flex items-center gap-4">
+                                <div id="preview-container" class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                                    <i class="fa-solid fa-camera text-slate-500 text-xl" id="placeholder-icon"></i>
+                                    <img id="img-preview" src="" alt="Pratinjau" class="w-full h-full object-cover hidden">
+                                </div>
+                                <div class="flex-grow">
+                                    <input type="file" id="foto-input" accept="image/*" capture="environment" onchange="previewFoto(event)" class="w-full text-xs text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-500 file:text-slate-950 hover:file:bg-emerald-400 file:cursor-pointer transition">
+                                    <p class="text-[10px] text-slate-500 mt-1">Ambil langsung dengan kamera handphone atau unggah dari galeri.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <h3 class="font-bold text-emerald-400 text-sm border-l-4 border-emerald-500 pl-3 uppercase tracking-wider mb-4">Rincian Finansial & Tenor</h3>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="block text-xs sm:text-sm font-bold text-slate-300">Nilai Pinjaman Pokok (Rp)</label>
+                                <span class="text-[10px] text-emerald-400 font-bold">Pilih Cepat:</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 mb-2">
+                                <button type="button" onclick="setNominal('pinjaman', 600000)" class="bg-slate-900 hover:bg-emerald-600 hover:text-white text-slate-200 text-xs font-bold py-2 px-3 rounded-xl border border-slate-700 transition shadow-sm">Rp 600.000</button>
+                                <button type="button" onclick="setNominal('pinjaman', 1200000)" class="bg-slate-900 hover:bg-emerald-600 hover:text-white text-slate-200 text-xs font-bold py-2 px-3 rounded-xl border border-slate-700 transition shadow-sm">Rp 1.200.000</button>
+                            </div>
+                            <input type="number" id="pinjaman" min="0" value="600000" oninput="hitungKalkulator()" required class="w-full px-4 py-3 rounded-2xl border border-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm bg-slate-900 text-white font-bold">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="block text-xs sm:text-sm font-bold text-slate-300">Tenor / Jangka Waktu (Hari)</label>
+                                <span class="text-[10px] text-emerald-400 font-bold">Pilih Cepat:</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 mb-2">
+                                <button type="button" onclick="setNominal('tenor', 20)" class="bg-slate-900 hover:bg-emerald-600 hover:text-white text-slate-200 text-xs font-bold py-2 px-3 rounded-xl border border-slate-700 transition shadow-sm">20 Hari</button>
+                                <button type="button" onclick="setNominal('tenor', 24)" class="bg-slate-900 hover:bg-emerald-600 hover:text-white text-slate-200 text-xs font-bold py-2 px-3 rounded-xl border border-slate-700 transition shadow-sm">24 Hari</button>
+                            </div>
+                            <input type="number" id="tenor" min="1" value="20" oninput="hitungKalkulator()" required class="w-full px-4 py-3 rounded-2xl border border-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm bg-slate-900 text-white font-bold">
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-300 mb-1">Simpanan Pokok</label>
+                                <input type="number" id="simpananPokok" min="0" value="50000" oninput="hitungKalkulator()" required class="w-full px-3 py-2.5 rounded-2xl border border-slate-700 text-xs bg-slate-900 text-white font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-300 mb-1">Simpanan Wajib</label>
+                                <input type="number" id="simpanan" min="0" value="25000" oninput="hitungKalkulator()" required class="w-full px-3 py-2.5 rounded-2xl border border-slate-700 text-xs bg-slate-900 text-white font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-300 mb-1">Jasa Koperasi</label>
+                                <input type="number" id="jasa" min="0" value="50000" oninput="hitungKalkulator()" required class="w-full px-3 py-2.5 rounded-2xl border border-slate-700 text-xs bg-slate-900 text-white font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-300 mb-1">Administrasi</label>
+                                <input type="number" id="admin" min="0" value="15000" oninput="hitungKalkulator()" required class="w-full px-3 py-2.5 rounded-2xl border border-slate-700 text-xs bg-slate-900 text-white font-medium">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col justify-between space-y-6 shadow-2xl">
+                        <div>
+                            <h3 class="font-bold text-white mb-4 flex items-center text-sm"><i class="fa-solid fa-receipt text-emerald-400 mr-2"></i> Akumulasi & Rincian Pencairan</h3>
+                            
+                            <div class="space-y-3 text-xs sm:text-sm">
+                                <div class="flex justify-between py-2 border-b border-slate-800">
+                                    <span class="text-slate-400">Nilai Pinjaman Pokok</span>
+                                    <span id="res-pinjaman" class="font-bold text-white">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between py-2 border-b border-slate-800">
+                                    <span class="text-slate-400">Tenor / Jangka Waktu</span>
+                                    <span id="res-tenor" class="font-bold text-emerald-400">20 Hari</span>
+                                </div>
+                                <div class="flex justify-between py-2 border-b border-slate-800">
+                                    <span class="text-slate-400">Cicilan Per Hari</span>
+                                    <span id="res-cicilan" class="font-bold text-amber-400">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between py-2 border-b border-slate-800">
+                                    <span class="text-slate-400">Simpanan Pokok (-)</span>
+                                    <span id="res-simpanan-pokok" class="font-bold text-rose-400">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between py-2 border-b border-slate-800">
+                                    <span class="text-slate-400">Simpanan Wajib (-)</span>
+                                    <span id="res-simpanan" class="font-bold text-rose-400">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between py-2 border-b border-slate-800">
+                                    <span class="text-slate-400">Jasa Koperasi (-)</span>
+                                    <span id="res-jasa" class="font-bold text-rose-400">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between py-2 border-b border-slate-800">
+                                    <span class="text-slate-400">Biaya Administrasi (-)</span>
+                                    <span id="res-admin" class="font-bold text-rose-400">Rp 0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-5 rounded-2xl shadow-xl">
+                            <p class="text-[10px] text-emerald-100 uppercase tracking-wider font-extrabold">Total Sisa Diterima Nasabah</p>
+                            <p id="res-total" class="text-3xl font-extrabold mt-1">Rp 0</p>
+                            <p class="text-[10px] text-emerald-100 mt-2 font-medium">*Tersimpan otomatis ke database cloud.</p>
+                        </div>
+
+                        <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-extrabold py-3.5 rounded-2xl transition shadow-xl text-sm flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-floppy-disk"></i> Simpan Data Nasabah
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- TAB 3: DATA NASABAH & PEMBAYARAN -->
+        <section id="tab-nasabah" class="hidden space-y-6">
+            <div class="bg-slate-950/80 backdrop-blur-md rounded-3xl shadow-2xl border border-slate-800 p-6 sm:p-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-4 mb-6 gap-4">
+                    <div>
+                        <span class="bg-teal-500/10 text-teal-400 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Database Web Cloud</span>
+                        <h2 class="text-xl sm:text-2xl font-extrabold text-white mt-1">Daftar Nasabah & Pembayaran</h2>
+                        <p class="text-xs sm:text-sm text-slate-400">Kelola sisa tagihan, input cicilan angsuran harian, ekspor & impor file Excel.</p>
+                    </div>
+                    <div id="admin-actions-header" class="flex flex-wrap items-center gap-2">
+                        <!-- Impor Excel Button & Hidden File Input -->
+                        <button id="btn-impor-excel" onclick="document.getElementById('excel-file-input').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-extrabold px-4 py-3 rounded-2xl transition shadow-lg flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-file-import"></i> Impor dari Excel
+                        </button>
+                        <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="imporDariExcel(event)">
+
+                        <button id="btn-ekspor-excel" onclick="eksporKeExcel()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-extrabold px-4 py-3 rounded-2xl transition shadow-lg flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-file-excel"></i> Ekspor ke Excel
+                        </button>
+                        <button onclick="switchTab('simulasi')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold px-4 py-3 rounded-2xl transition shadow-lg flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-plus"></i> Tambah Nasabah
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                        <thead>
+                            <tr class="bg-slate-900 text-slate-300 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                                <th class="p-3.5 rounded-l-2xl">Nasabah</th>
+                                <th class="p-3.5">Telepon</th>
+                                <th class="p-3.5">Pinjaman</th>
+                                <th class="p-3.5">Tenor / Cicilan</th>
+                                <th class="p-3.5">Sisa Tagihan</th>
+                                <th class="p-3.5">Sisa Diterima</th>
+                                <th id="th-aksi-header" class="p-3.5 text-center rounded-r-2xl">Aksi / Bayar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-nasabah" class="divide-y divide-slate-800/60 font-medium">
+                            <!-- Data dimuat secara real-time -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav id="mobile-nav-bar" class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-950 border-t border-slate-800 px-6 py-3 flex justify-around items-center z-50 shadow-2xl">
+        <button onclick="switchTab('dashboard')" id="mob-dashboard" class="flex flex-col items-center text-emerald-400">
+            <i class="fa-solid fa-house text-lg"></i>
+            <span class="text-[10px] font-bold mt-1">Dashboard</span>
+        </button>
+        <button onclick="switchTab('simulasi')" id="mob-simulasi" class="flex flex-col items-center text-slate-400 hover:text-white">
+            <i class="fa-solid fa-calculator text-lg"></i>
+            <span class="text-[10px] font-bold mt-1">Form & Kalk</span>
+        </button>
+        <button onclick="switchTab('nasabah')" id="mob-nasabah" class="flex flex-col items-center text-slate-400 hover:text-white">
+            <i class="fa-solid fa-users text-lg"></i>
+            <span class="text-[10px] font-bold mt-1">Nasabah</span>
+        </button>
+    </nav>
+
+    <!-- Footer Desktop -->
+    <footer class="hidden md:block bg-slate-950 border-t border-slate-800 mt-12 py-4 text-center text-xs text-slate-400 font-medium">
+        <p>&copy; 2026 Koperasi Simpan Pinjam Azzahrah Web App. All rights reserved.</p>
+    </footer>
+
+    <!-- Custom Modal Pemberitahuan -->
+    <div id="modal-notif" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
+            <div id="modal-icon" class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto text-xl shadow"></div>
+            <h4 id="modal-title" class="font-extrabold text-lg text-white"></h4>
+            <p id="modal-desc" class="text-xs sm:text-sm text-slate-400 leading-relaxed"></p>
+            <button onclick="tutupModal()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3 rounded-2xl font-extrabold text-sm shadow-lg transition">Mengerti</button>
+        </div>
+    </div>
+
+    <!-- Modal Pembayaran Angsuran -->
+    <div id="modal-bayar" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-5 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <div>
+                    <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Form Angsuran</span>
+                    <h3 id="bayar-nama-nasabah" class="font-extrabold text-lg text-white mt-1">Pembayaran Angsuran</h3>
+                </div>
+                <button onclick="tutupModalBayar()" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:bg-slate-700 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-bayar-angsuran" onsubmit="prosesBayarAngsuran(event)" class="space-y-4">
+                <input type="hidden" id="bayar-id">
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold text-slate-300 mb-1">Sisa Tagihan Saat Ini</label>
+                    <p id="bayar-sisa-tagihan" class="text-lg font-extrabold text-rose-400">Rp 0</p>
+                </div>
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold text-slate-300 mb-1">Nominal Pembayaran (Rp)</label>
+                    <input type="number" id="nominal-bayar" min="1" required class="w-full px-4 py-3 rounded-2xl border border-slate-700 bg-slate-950 text-white font-bold text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="tutupModalBayar()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-extrabold py-3 rounded-2xl text-sm transition">Batal</button>
+                    <button type="submit" class="w-1/2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold py-3 rounded-2xl text-sm shadow-lg transition">Bayar Sekarang</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Edit Nasabah -->
+    <div id="modal-edit" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-xl w-full space-y-5 shadow-2xl my-8">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <div>
+                    <span class="bg-amber-500/10 text-amber-400 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Form Edit</span>
+                    <h3 class="font-extrabold text-lg sm:text-xl text-white mt-1">Edit Data Nasabah</h3>
+                </div>
+                <button onclick="tutupModalEdit()" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:bg-slate-700 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-edit-nasabah" onsubmit="simpanEditNasabah(event)" class="space-y-4">
+                <input type="hidden" id="edit-id">
+                <input type="hidden" id="edit-docid">
+                
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold text-slate-300 mb-1">Nama Lengkap Nasabah</label>
+                    <input type="text" id="edit-nama" required class="w-full px-4 py-3 rounded-2xl border border-slate-700 bg-slate-950 text-white text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold text-slate-300 mb-1">Nomor Telepon / WhatsApp</label>
+                    <input type="tel" id="edit-telepon" required class="w-full px-4 py-3 rounded-2xl border border-slate-700 bg-slate-950 text-white text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs sm:text-sm font-bold text-slate-300">Jumlah Pinjaman Pokok (Rp)</label>
+                        <span class="text-[10px] text-emerald-400 font-bold">Pilih:</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <button type="button" onclick="setNominalEdit('pinjaman', 600000)" class="bg-slate-950 hover:bg-emerald-600 hover:text-white text-slate-300 text-xs font-bold py-1.5 px-2 rounded-xl border border-slate-700 transition">600 Ribu</button>
+                        <button type="button" onclick="setNominalEdit('pinjaman', 1200000)" class="bg-slate-950 hover:bg-emerald-600 hover:text-white text-slate-300 text-xs font-bold py-1.5 px-2 rounded-xl border border-slate-700 transition">1.2 Juta</button>
+                    </div>
+                    <input type="number" id="edit-pinjaman" min="0" oninput="hitungKalkulatorEdit()" required class="w-full px-4 py-3 rounded-2xl border border-slate-700 bg-slate-950 text-white text-sm font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold text-slate-300 mb-1">Tenor / Jangka Waktu (Hari)</label>
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <button type="button" onclick="setNominalEdit('tenor', 20)" class="bg-slate-950 hover:bg-emerald-600 hover:text-white text-slate-300 text-xs font-bold py-1.5 px-2 rounded-xl border border-slate-700 transition">20 Hari</button>
+                        <button type="button" onclick="setNominalEdit('tenor', 24)" class="bg-slate-950 hover:bg-emerald-600 hover:text-white text-slate-300 text-xs font-bold py-1.5 px-2 rounded-xl border border-slate-700 transition">24 Hari</button>
+                    </div>
+                    <input type="number" id="edit-tenor" min="1" oninput="hitungKalkulatorEdit()" required class="w-full px-4 py-3 rounded-2xl border border-slate-700 bg-slate-950 text-white text-sm font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Simpanan Pokok</label>
+                        <input type="number" id="edit-simpanan-pokok" min="0" oninput="hitungKalkulatorEdit()" required class="w-full px-3 py-2.5 rounded-2xl border border-slate-700 text-xs bg-slate-950 text-white font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Simpanan Wajib</label>
+                        <input type="number" id="edit-simpanan" min="0" oninput="hitungKalkulatorEdit()" required class="w-full px-3 py-2.5 rounded-2xl border border-slate-700 text-xs bg-slate-950 text-white font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Jasa Koperasi</label>
+                        <input type="number" id="edit-jasa" min="0" oninput="hitungKalkulatorEdit()" required class="w-full px-3 py-2.5 rounded-2xl border border-slate-700 text-xs bg-slate-950 text-white font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Administrasi</label>
+                        <input type="number" id="edit-admin" min="0" oninput="hitungKalkulatorEdit()" required class="w-full px-3 py-2.5 rounded-2xl border border-slate-700 text-xs bg-slate-950 text-white font-medium">
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 text-white p-4 rounded-2xl flex justify-between items-center text-xs sm:text-sm border border-slate-800">
+                    <div>
+                        <p class="text-slate-400 text-[10px] uppercase font-bold">Ringkasan Edit</p>
+                        <p class="font-bold"><span id="edit-res-pinjaman">Rp 0</span> • <span id="edit-res-tenor" class="text-emerald-400">20 Hari</span></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-emerald-400 text-[10px] uppercase font-bold">Sisa Diterima</p>
+                        <p id="edit-res-total" class="font-extrabold text-base text-white">Rp 0</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="tutupModalEdit()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-extrabold py-3 rounded-2xl text-sm transition">Batal</button>
+                    <button type="submit" class="w-1/2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-3 rounded-2xl text-sm shadow-lg transition">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK & Web App Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import * as XLSX from 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm';
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : undefined;
+
+        let db, auth, currentUser;
+        let daftarNasabah = [];
+        let riwayatPembayaran = [];
+        let fotoNasabahBase64 = 'https://placehold.co/100x100/10b981/ffffff?text=User';
+        let editFotoBase64 = '';
+        let currentRole = 'admin';
+
+        window.setLoginRole = function(role) {
+            currentRole = role;
+            const tabAdmin = document.getElementById('login-tab-admin');
+            const tabPetugas = document.getElementById('login-tab-petugas');
+            const labelPass = document.getElementById('label-password-login');
+            const inputPass = document.getElementById('admin-password');
+
+            if (role === 'admin') {
+                tabAdmin.className = 'py-2.5 rounded-xl text-xs font-extrabold transition bg-emerald-600 text-white shadow cursor-pointer';
+                tabPetugas.className = 'py-2.5 rounded-xl text-xs font-extrabold transition text-slate-400 hover:text-white cursor-pointer';
+                labelPass.innerText = 'Password Administrator';
+            } else {
+                tabPetugas.className = 'py-2.5 rounded-xl text-xs font-extrabold transition bg-teal-600 text-white shadow cursor-pointer';
+                tabAdmin.className = 'py-2.5 rounded-xl text-xs font-extrabold transition text-slate-400 hover:text-white cursor-pointer';
+                labelPass.innerText = 'Password Petugas Lapangan';
+            }
+            inputPass.value = '';
+        };
+
+        window.prosesLoginSistem = function(e) {
+            e.preventDefault();
+            const pass = document.getElementById('admin-password').value;
+            
+            if (currentRole === 'admin') {
+                if (pass === '120286') {
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('header-role-badge').innerText = 'Administrator Utama';
+                    document.getElementById('header-role-badge').className = 'text-[11px] text-emerald-400 font-bold';
+                    
+                    const btnImpor = document.getElementById('btn-impor-excel');
+                    const btnEkspor = document.getElementById('btn-ekspor-excel');
+                    if(btnImpor) btnImpor.classList.remove('hidden');
+                    if(btnEkspor) btnEkspor.classList.remove('hidden');
+
+                    renderTabel();
+                    updateStatistik();
+                    window.tampilkanModal('Login Berhasil', 'Selamat datang kembali di Aplikasi Web Koperasi Azzahrah!', 'success');
+                } else {
+                    window.tampilkanModal('Password Salah', 'Password admin yang Anda masukkan salah.', 'error');
+                }
+            } else {
+                if (pass === 'petugas123') {
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('header-role-badge').innerText = 'Petugas Lapangan';
+                    document.getElementById('header-role-badge').className = 'text-[11px] text-teal-400 font-bold';
+                    
+                    const btnImpor = document.getElementById('btn-impor-excel');
+                    const btnEkspor = document.getElementById('btn-ekspor-excel');
+                    if(btnImpor) btnImpor.classList.add('hidden');
+                    if(btnEkspor) btnEkspor.classList.add('hidden');
+
+                    renderTabel();
+                    updateStatistik();
+                    window.tampilkanModal('Login Berhasil', 'Selamat datang, Petugas Lapangan!', 'success');
+                } else {
+                    window.tampilkanModal('Password Salah', 'Password petugas lapangan salah.', 'error');
+                }
+            }
+        };
+
+        window.logoutSistem = function() {
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('admin-password').value = '';
+        };
+
+        async function initFirebase() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                currentUser = auth.currentUser;
+                
+                if (currentUser) {
+                    setupListeners();
+                }
+            } catch (err) {
+                console.error("Firebase web init error:", err);
+            }
+        }
+
+        function setupListeners() {
+            if (!currentUser) return;
+
+            const nasabahCol = collection(db, 'artifacts', appId, 'public', 'data', 'nasabah');
+            onSnapshot(nasabahCol, (snapshot) => {
+                daftarNasabah = [];
+                snapshot.forEach(docSnap => {
+                    daftarNasabah.push({ docId: docSnap.id, ...docSnap.data() });
+                });
+                renderTabel();
+                updateStatistik();
+            }, (error) => {
+                console.error("Nasabah snapshot error:", error);
+            });
+
+            const riwayatCol = collection(db, 'artifacts', appId, 'public', 'data', 'riwayat_pembayaran');
+            onSnapshot(riwayatCol, (snapshot) => {
+                riwayatPembayaran = [];
+                snapshot.forEach(docSnap => {
+                    riwayatPembayaran.push({ docId: docSnap.id, ...docSnap.data() });
+                });
+                updateStatistik();
+            }, (error) => {
+                console.error("Riwayat snapshot error:", error);
+            });
+        }
+
+        window.formatRupiah = function(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        };
+
+        window.previewFoto = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    fotoNasabahBase64 = event.target.result;
+                    const img = document.getElementById('img-preview');
+                    const icon = document.getElementById('placeholder-icon');
+                    if (img && icon) {
+                        img.src = fotoNasabahBase64;
+                        img.classList.remove('hidden');
+                        icon.classList.add('hidden');
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.switchTab = function(tabId) {
+            ['dashboard', 'simulasi', 'nasabah'].forEach(id => {
+                const tabEl = document.getElementById('tab-' + id);
+                if (tabEl) tabEl.classList.add('hidden');
+                
+                const navBtn = document.getElementById('nav-' + id);
+                if(navBtn) navBtn.className = 'px-4 py-2 rounded-xl transition text-slate-400 hover:text-white';
+                
+                const mobBtn = document.getElementById('mob-' + id);
+                if(mobBtn) mobBtn.className = 'flex flex-col items-center text-slate-400 hover:text-white';
+            });
+
+            const activeTab = document.getElementById('tab-' + tabId);
+            if (activeTab) activeTab.classList.remove('hidden');
+            
+            const activeNav = document.getElementById('nav-' + tabId);
+            if(activeNav) activeNav.className = 'px-4 py-2 rounded-xl transition text-emerald-400 bg-emerald-950/50';
+            
+            const activeMob = document.getElementById('mob-' + tabId);
+            if(activeMob) activeMob.className = 'flex flex-col items-center text-emerald-400';
+
+            if(tabId === 'nasabah') renderTabel();
+            if(tabId === 'dashboard') updateStatistik();
+        };
+
+        window.setNominal = function(fieldId, nilai) {
+            const el = document.getElementById(fieldId);
+            if(el) {
+                el.value = nilai;
+                hitungKalkulator();
+            }
+        };
+
+        window.setNominalEdit = function(fieldId, nilai) {
+            const el = document.getElementById('edit-' + fieldId);
+            if(el) {
+                el.value = nilai;
+                hitungKalkulatorEdit();
+            }
+        };
+
+        window.hitungKalkulator = function() {
+            const pinjEl = document.getElementById('pinjaman');
+            const tenorEl = document.getElementById('tenor');
+            const simpPokokEl = document.getElementById('simpananPokok');
+            const simpEl = document.getElementById('simpanan');
+            const jasaEl = document.getElementById('jasa');
+            const adminEl = document.getElementById('admin');
+
+            if (!pinjEl || !tenorEl) return;
+
+            const pinjaman = parseFloat(pinjEl.value) || 0;
+            const tenor = parseInt(tenorEl.value) || 20;
+            const simpananPokok = parseFloat(simpPokokEl?.value) || 0;
+            const simpanan = parseFloat(simpEl?.value) || 0;
+            const jasa = parseFloat(jasaEl?.value) || 0;
+            const admin = parseFloat(adminEl?.value) || 0;
+
+            const cicilanPerHari = tenor > 0 ? Math.ceil(pinjaman / tenor) : 0;
+            const totalPotongan = simpananPokok + simpanan + jasa + admin;
+            const sisaDiterima = pinjaman - totalPotongan;
+
+            const resPinj = document.getElementById('res-pinjaman');
+            if (resPinj) resPinj.innerText = window.formatRupiah(pinjaman);
+            
+            const resTenor = document.getElementById('res-tenor');
+            if (resTenor) resTenor.innerText = tenor + ' Hari';
+            
+            const resCicilan = document.getElementById('res-cicilan');
+            if (resCicilan) resCicilan.innerText = window.formatRupiah(cicilanPerHari) + '/hari';
+
+            const resSimpPokok = document.getElementById('res-simpanan-pokok');
+            if (resSimpPokok) resSimpPokok.innerText = '- ' + window.formatRupiah(simpananPokok);
+            
+            const resSimp = document.getElementById('res-simpanan');
+            if (resSimp) resSimp.innerText = '- ' + window.formatRupiah(simpanan);
+            
+            const resJasa = document.getElementById('res-jasa');
+            if (resJasa) resJasa.innerText = '- ' + window.formatRupiah(jasa);
+            
+            const resAdmin = document.getElementById('res-admin');
+            if (resAdmin) resAdmin.innerText = '- ' + window.formatRupiah(admin);
+            
+            const totalElement = document.getElementById('res-total');
+            if (totalElement) {
+                totalElement.innerText = window.formatRupiah(sisaDiterima);
+                if (sisaDiterima < 0) {
+                    totalElement.classList.add('text-rose-300');
+                } else {
+                    totalElement.classList.remove('text-rose-300');
+                }
+            }
+        };
+
+        window.hitungKalkulatorEdit = function() {
+            const pinjEl = document.getElementById('edit-pinjaman');
+            const tenorEl = document.getElementById('edit-tenor');
+            const simpPokokEl = document.getElementById('edit-simpanan-pokok');
+            const simpEl = document.getElementById('edit-simpanan');
+            const jasaEl = document.getElementById('edit-jasa');
+            const adminEl = document.getElementById('edit-admin');
+
+            if (!pinjEl || !tenorEl) return;
+
+            const pinjaman = parseFloat(pinjEl.value) || 0;
+            const tenor = parseInt(tenorEl.value) || 20;
+            const simpananPokok = parseFloat(simpPokokEl?.value) || 0;
+            const simpanan = parseFloat(simpEl?.value) || 0;
+            const jasa = parseFloat(jasaEl?.value) || 0;
+            const admin = parseFloat(adminEl?.value) || 0;
+
+            const totalPotongan = simpananPokok + simpanan + jasa + admin;
+            const sisaDiterima = pinjaman - totalPotongan;
+
+            const edPinj = document.getElementById('edit-res-pinjaman');
+            if (edPinj) edPinj.innerText = window.formatRupiah(pinjaman);
+            
+            const edTenor = document.getElementById('edit-res-tenor');
+            if (edTenor) edTenor.innerText = tenor + ' Hari';
+            
+            const edTotal = document.getElementById('edit-res-total');
+            if (edTotal) edTotal.innerText = window.formatRupiah(sisaDiterima);
+        };
+
+        window.simpanNasabah = async function(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            const nama = document.getElementById('nama').value;
+            const telepon = document.getElementById('telepon').value;
+            const pinjaman = parseFloat(document.getElementById('pinjaman').value) || 0;
+            const tenor = parseInt(document.getElementById('tenor').value) || 20;
+            const simpananPokok = parseFloat(document.getElementById('simpananPokok').value) || 0;
+            const simpanan = parseFloat(document.getElementById('simpanan').value) || 0;
+            const jasa = parseFloat(document.getElementById('jasa').value) || 0;
+            const admin = parseFloat(document.getElementById('admin').value) || 0;
+            
+            const cicilanPerHari = tenor > 0 ? Math.ceil(pinjaman / tenor) : pinjaman;
+            const sisa = pinjaman - (simpananPokok + simpanan + jasa + admin);
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            const newData = { 
+                id: Date.now(), 
+                nama, 
+                telepon, 
+                pinjaman, 
+                tenor, 
+                cicilanPerHari,
+                sisaTagihan: pinjaman,
+                simpananPokok,
+                simpanan, 
+                jasa, 
+                admin, 
+                sisa, 
+                tanggal: todayStr,
+                foto: fotoNasabahBase64 
+            };
+
+            try {
+                const nasabahCol = collection(db, 'artifacts', appId, 'public', 'data', 'nasabah');
+                await addDoc(nasabahCol, newData);
+
+                document.getElementById('form-nasabah').reset();
+                document.getElementById('img-preview').classList.add('hidden');
+                document.getElementById('placeholder-icon').classList.remove('hidden');
+                fotoNasabahBase64 = 'https://placehold.co/100x100/10b981/ffffff?text=User';
+
+                window.hitungKalkulator();
+                window.tampilkanModal('Berhasil!', 'Data nasabah berhasil disimpan otomatis ke web database.', 'success');
+                window.switchTab('nasabah');
+            } catch (err) {
+                console.error("Error adding document: ", err);
+                window.tampilkanModal('Gagal', 'Terjadi kesalahan saat menyimpan data ke database.', 'error');
+            }
+        };
+
+        window.imporDariExcel = function(e) {
+            if (currentRole !== 'admin') {
+                window.tampilkanModal('Akses Ditolak', 'Hanya Administrator yang memiliki otoritas untuk impor Excel.', 'error');
+                return;
+            }
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+
+                    if (json.length === 0) {
+                        window.tampilkanModal('Perhatian', 'File Excel kosong atau format tidak sesuai.', 'error');
+                        return;
+                    }
+
+                    let successCount = 0;
+                    const todayStr = new Date().toISOString().split('T')[0];
+
+                    for (let row of json) {
+                        const nama = row['Nama Nasabah'] || row['nama'] || row['Nama'] || 'Tanpa Nama';
+                        const telepon = String(row['Telepon'] || row['telepon'] || row['No HP'] || '080000000');
+                        const pinjaman = parseFloat(row['Pinjaman Pokok'] || row['pinjaman'] || row['Pinjaman'] || 600000);
+                        const tenor = parseInt(row['Tenor (Hari)'] || row['tenor'] || row['Tenor'] || 20);
+                        const simpananPokok = parseFloat(row['Simpanan Pokok'] || row['simpananPokok'] || 50000);
+                        const simpanan = parseFloat(row['Simpanan Wajib'] || row['simpanan'] || 25000);
+                        const jasa = parseFloat(row['Jasa Koperasi'] || row['jasa'] || 50000);
+                        const admin = parseFloat(row['Administrasi'] || row['admin'] || 15000);
+
+                        const cicilanPerHari = tenor > 0 ? Math.ceil(pinjaman / tenor) : pinjaman;
+                        const sisa = pinjaman - (simpananPokok + simpanan + jasa + admin);
+
+                        const newData = {
+                            id: Date.now() + Math.floor(Math.random() * 10000),
+                            nama: String(nama),
+                            telepon: String(telepon),
+                            pinjaman: pinjaman,
+                            tenor: tenor,
+                            cicilanPerHari: cicilanPerHari,
+                            sisaTagihan: pinjaman,
+                            simpananPokok: simpananPokok,
+                            simpanan: simpanan,
+                            jasa: jasa,
+                            admin: admin,
+                            sisa: sisa,
+                            tanggal: todayStr,
+                            foto: 'https://placehold.co/100x100/10b981/ffffff?text=User'
+                        };
+
+                        const nasabahCol = collection(db, 'artifacts', appId, 'public', 'data', 'nasabah');
+                        await addDoc(nasabahCol, newData);
+                        successCount++;
+                    }
+
+                    e.target.value = '';
+                    window.tampilkanModal('Impor Berhasil!', `Berhasil mengimpor ${successCount} data nasabah otomatis ke database.`, 'success');
+                    window.switchTab('nasabah');
+                } catch (err) {
+                    console.error("Error importing excel:", err);
+                    window.tampilkanModal('Gagal Impor', 'Terjadi kesalahan saat membaca file Excel.', 'error');
+                    e.target.value = '';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        function renderTabel() {
+            const tbody = document.getElementById('tabel-nasabah');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            let dataTampil = daftarNasabah;
+
+            if (dataTampil.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Belum ada data nasabah terdaftar di database web.</td></tr>`;
+                return;
+            }
+
+            dataTampil.forEach((item) => {
+                const sisaTagihanVal = item.sisaTagihan !== undefined ? item.sisaTagihan : item.pinjaman;
+                const tenorVal = item.tenor || 20;
+                const cicilanVal = item.cicilanPerHari || Math.ceil(item.pinjaman / tenorVal);
+                const fotoUrl = item.foto || 'https://placehold.co/100x100/10b981/ffffff?text=User';
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-900/50 transition';
+                
+                let actionHtml = '';
+                if (currentRole === 'admin') {
+                    actionHtml = `
+                        <td class="p-3.5 text-center flex items-center justify-center gap-1.5">
+                            <button onclick="bukaModalBayar('${item.docId}')" class="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 p-2 rounded-xl transition shadow-sm border border-emerald-500/20" title="Bayar Angsuran">
+                                <i class="fa-solid fa-money-bill-wave"></i>
+                            </button>
+                            <button onclick="bukaModalEdit('${item.docId}')" class="bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-slate-950 p-2 rounded-xl transition shadow-sm border border-amber-500/20" title="Edit Data">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="hapusNasabah('${item.docId}')" class="bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-slate-950 p-2 rounded-xl transition shadow-sm border border-rose-500/20" title="Hapus Data">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    `;
+                } else {
+                    actionHtml = `
+                        <td class="p-3.5 text-center flex items-center justify-center gap-1.5">
+                            <button onclick="bukaModalBayar('${item.docId}')" class="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 p-2 rounded-xl transition shadow-sm border border-emerald-500/20" title="Bayar Angsuran">
+                                <i class="fa-solid fa-money-bill-wave"></i>
+                            </button>
+                            <span class="text-[10px] text-slate-500 italic px-2">Hanya Admin Edit/Hapus</span>
+                        </td>
+                    `;
+                }
+
+                tr.innerHTML = `
+                    <td class="p-3.5 flex items-center gap-2.5">
+                        <img src="${fotoUrl}" alt="Foto" class="w-10 h-10 rounded-xl object-cover shadow-sm border border-slate-700 shrink-0">
+                        <div>
+                            <span class="font-bold text-white block leading-tight">${item.nama}</span>
+                            <span class="text-[10px] text-slate-400">ID: ${item.id}</span>
+                        </div>
+                    </td>
+                    <td class="p-3.5 text-slate-300">${item.telepon}</td>
+                    <td class="p-3.5 text-slate-200 font-semibold">${window.formatRupiah(item.pinjaman)}</td>
+                    <td class="p-3.5 text-slate-300">${tenorVal} Hr<br><span class="text-[11px] text-emerald-400 font-extrabold">${window.formatRupiah(cicilanVal)}/hr</span></td>
+                    <td class="p-3.5 font-extrabold text-rose-400">${window.formatRupiah(sisaTagihanVal)}</td>
+                    <td class="p-3.5 font-extrabold text-emerald-400">${window.formatRupiah(item.sisa)}</td>
+                    ${actionHtml}
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.bukaModalBayar = function(docId) {
+            const nasabah = daftarNasabah.find(i => i.docId === docId);
+            if(!nasabah) return;
+            document.getElementById('bayar-id').value = nasabah.docId;
+            document.getElementById('bayar-nama-nasabah').innerText = 'Bayar: ' + nasabah.nama;
+            const sisaTagihan = nasabah.sisaTagihan !== undefined ? nasabah.sisaTagihan : nasabah.pinjaman;
+            document.getElementById('bayar-sisa-tagihan').innerText = window.formatRupiah(sisaTagihan);
+            document.getElementById('nominal-bayar').value = nasabah.cicilanPerHari || Math.ceil(nasabah.pinjaman / (nasabah.tenor || 20));
+
+            const modal = document.getElementById('modal-bayar');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        };
+
+        window.tutupModalBayar = function() {
+            const modal = document.getElementById('modal-bayar');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        };
+
+        window.prosesBayarAngsuran = async function(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            const docId = document.getElementById('bayar-id').value;
+            const nominal = parseFloat(document.getElementById('nominal-bayar').value) || 0;
+            
+            const nasabah = daftarNasabah.find(i => i.docId === docId);
+            if(nasabah) {
+                let currentSisa = nasabah.sisaTagihan !== undefined ? nasabah.sisaTagihan : nasabah.pinjaman;
+                const newSisaTagihan = Math.max(0, currentSisa - nominal);
+
+                try {
+                    const nasabahRef = doc(db, 'artifacts', appId, 'public', 'data', 'nasabah', docId);
+                    await updateDoc(nasabahRef, { sisaTagihan: newSisaTagihan });
+
+                    const riwayatCol = collection(db, 'artifacts', appId, 'public', 'data', 'riwayat_pembayaran');
+                    await addDoc(riwayatCol, {
+                        id: Date.now(),
+                        nasabahId: nasabah.id,
+                        nama: nasabah.nama,
+                        jumlah: nominal,
+                        tanggal: new Date().toISOString().split('T')[0]
+                    });
+
+                    window.tutupModalBayar();
+                    window.tampilkanModal('Pembayaran Sukses!', 'Angsuran berhasil dicatat di web server.', 'success');
+                } catch (err) {
+                    console.error("Error processing payment:", err);
+                }
+            }
+        };
+
+        window.hapusNasabah = async function(docId) {
+            if (currentRole !== 'admin') {
+                window.tampilkanModal('Akses Ditolak', 'Hanya Administrator yang memiliki otoritas untuk menghapus data nasabah.', 'error');
+                return;
+            }
+            if (!currentUser) return;
+            try {
+                const nasabahRef = doc(db, 'artifacts', appId, 'public', 'data', 'nasabah', docId);
+                await deleteDoc(nasabahRef);
+                window.tampilkanModal('Berhasil', 'Data nasabah berhasil dihapus.', 'success');
+            } catch (err) {
+                console.error("Error deleting document:", err);
+            }
+        };
+
+        window.bukaModalEdit = function(docId) {
+            if (currentRole !== 'admin') {
+                window.tampilkanModal('Akses Ditolak', 'Hanya Administrator yang memiliki otoritas untuk mengedit data nasabah.', 'error');
+                return;
+            }
+            const nasabah = daftarNasabah.find(i => i.docId === docId);
+            if(!nasabah) return;
+            
+            document.getElementById('edit-docid').value = nasabah.docId;
+            document.getElementById('edit-nama').value = nasabah.nama;
+            document.getElementById('edit-telepon').value = nasabah.telepon;
+            document.getElementById('edit-pinjaman').value = nasabah.pinjaman;
+            document.getElementById('edit-tenor').value = nasabah.tenor || 20;
+            document.getElementById('edit-simpanan-pokok').value = nasabah.simpananPokok || 0;
+            document.getElementById('edit-simpanan').value = nasabah.simpanan || 0;
+            document.getElementById('edit-jasa').value = nasabah.jasa || 0;
+            document.getElementById('edit-admin').value = nasabah.admin || 0;
+            editFotoBase64 = nasabah.foto || '';
+
+            const modal = document.getElementById('modal-edit');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+            window.hitungKalkulatorEdit();
+        };
+
+        window.tutupModalEdit = function() {
+            const modal = document.getElementById('modal-edit');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        };
+
+        window.simpanEditNasabah = async function(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            const docId = document.getElementById('edit-docid').value;
+            const nama = document.getElementById('edit-nama').value;
+            const telepon = document.getElementById('edit-telepon').value;
+            const pinjaman = parseFloat(document.getElementById('edit-pinjaman').value) || 0;
+            const tenor = parseInt(document.getElementById('edit-tenor').value) || 20;
+            const simpananPokok = parseFloat(document.getElementById('edit-simpanan-pokok').value) || 0;
+            const simpanan = parseFloat(document.getElementById('edit-simpanan').value) || 0;
+            const jasa = parseFloat(document.getElementById('edit-jasa').value) || 0;
+            const admin = parseFloat(document.getElementById('edit-admin').value) || 0;
+            const sisa = pinjaman - (simpananPokok + simpanan + jasa + admin);
+            const cicilanPerHari = tenor > 0 ? Math.ceil(pinjaman / tenor) : pinjaman;
+
+            const nasabahLama = daftarNasabah.find(i => i.docId === docId);
+            let diffPinjaman = pinjaman - (nasabahLama ? nasabahLama.pinjaman : pinjaman);
+            let newSisaTagihan = Math.max(0, ((nasabahLama?.sisaTagihan !== undefined) ? nasabahLama.sisaTagihan : pinjaman) + diffPinjaman);
+
+            try {
+                const nasabahRef = doc(db, 'artifacts', appId, 'public', 'data', 'nasabah', docId);
+                const updatePayload = {
+                    nama,
+                    telepon,
+                    pinjaman,
+                    tenor,
+                    cicilanPerHari,
+                    simpananPokok,
+                    simpanan,
+                    jasa,
+                    admin,
+                    sisa,
+                    sisaTagihan: newSisaTagihan
+                };
+                if(editFotoBase64) updatePayload.foto = editFotoBase64;
+
+                await updateDoc(nasabahRef, updatePayload);
+                window.tutupModalEdit();
+                window.tampilkanModal('Berhasil!', 'Data nasabah berhasil diperbarui di web server.', 'success');
+            } catch (err) {
+                console.error("Error updating document:", err);
+            }
+        };
+
+        window.eksporKeExcel = function() {
+            if (currentRole !== 'admin') {
+                window.tampilkanModal('Akses Ditolak', 'Hanya Administrator yang memiliki otoritas untuk ekspor laporan Excel.', 'error');
+                return;
+            }
+            if (daftarNasabah.length === 0) {
+                window.tampilkanModal('Perhatian', 'Belum ada data nasabah untuk diekspor.', 'error');
+                return;
+            }
+
+            let htmlContent = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="utf-8"><title>Laporan Koperasi Azzahrah Web</title></head>
+            <body>
+            <h2>Laporan Data Nasabah & Pinjaman Koperasi Azzahrah Web</h2>
+            <table border="1">
+                <tr style="background-color: #10b981; color: white;">
+                    <th>ID</th><th>Nama Nasabah</th><th>Telepon</th><th>Pinjaman Pokok</th><th>Tenor (Hari)</th><th>Cicilan/Hari</th><th>Sisa Tagihan</th><th>Simpanan Pokok</th><th>Simpanan Wajib</th><th>Jasa Koperasi</th><th>Administrasi</th><th>Sisa Diterima</th><th>Tanggal Daftar</th>
+                </tr>`;
+
+            daftarNasabah.forEach(item => {
+                htmlContent += `<tr>
+                    <td>${item.id || ''}</td>
+                    <td>${item.nama || ''}</td>
+                    <td>'${item.telepon || ''}</td>
+                    <td>${item.pinjaman || 0}</td>
+                    <td>${item.tenor || 20}</td>
+                    <td>${item.cicilanPerHari || 0}</td>
+                    <td>${item.sisaTagihan !== undefined ? item.sisaTagihan : item.pinjaman}</td>
+                    <td>${item.simpananPokok || 0}</td>
+                    <td>${item.simpanan || 0}</td>
+                    <td>${item.jasa || 0}</td>
+                    <td>${item.admin || 0}</td>
+                    <td>${item.sisa || 0}</td>
+                    <td>${item.tanggal || ''}</td>
+                </tr>`;
+            });
+
+            htmlContent += `</table></body></html>`;
+
+            const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Laporan_Koperasi_Azzahrah_Web_${new Date().toISOString().split('T')[0]}.xls`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        function updateStatistik() {
+            const elTotNasabah = document.getElementById('stat-total-nasabah');
+            const elTotPinjaman = document.getElementById('stat-total-pinjaman');
+            const elTotSimpPokok = document.getElementById('stat-total-simpanan-pokok');
+            const elTotSimpanan = document.getElementById('stat-total-simpanan');
+            const elTotJasa = document.getElementById('stat-total-jasa');
+            const elAngsuranHari = document.getElementById('stat-angsuran-hari');
+            const elRunning = document.getElementById('running-text');
+
+            let dataset = daftarNasabah;
+
+            const totalNasabah = dataset.length;
+            if (elTotNasabah) elTotNasabah.innerText = totalNasabah;
+
+            const totalPinjaman = dataset.reduce((acc, curr) => acc + (curr.pinjaman || 0), 0);
+            if (elTotPinjaman) elTotPinjaman.innerText = window.formatRupiah(totalPinjaman);
+
+            const totalSimpPokok = dataset.reduce((acc, curr) => acc + (curr.simpananPokok || 0), 0);
+            if (elTotSimpPokok) elTotSimpPokok.innerText = window.formatRupiah(totalSimpPokok);
+
+            const totalSimpanan = dataset.reduce((acc, curr) => acc + (curr.simpanan || 0), 0);
+            if (elTotSimpanan) elTotSimpanan.innerText = window.formatRupiah(totalSimpanan);
+
+            const totalJasa = dataset.reduce((acc, curr) => acc + (curr.jasa || 0), 0);
+            if (elTotJasa) elTotJasa.innerText = window.formatRupiah(totalJasa);
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            const angsuranHariIni = riwayatPembayaran
+                .filter(item => item.tanggal === todayStr)
+                .reduce((acc, curr) => acc + (curr.jumlah || 0), 0);
+            if (elAngsuranHari) elAngsuranHari.innerText = window.formatRupiah(angsuranHariIni);
+
+            if (elRunning) {
+                const nasabahHariIni = daftarNasabah.filter(item => item.tanggal === todayStr);
+                let tickerText = `🌟 KOPERASI AZZAHRAH WEB APP: Total Anggota: ${totalNasabah} Orang | Total Pinjaman: ${window.formatRupiah(totalPinjaman)} | Total Simpanan Pokok: ${window.formatRupiah(totalSimpPokok)} | `;
+                if(nasabahHariIni.length > 0) {
+                    const namaBaru = nasabahHariIni.map(i => i.nama).join(', ');
+                    tickerText += `Nasabah Baru Hari Ini: [ ${namaBaru} ] | `;
+                } else {
+                    tickerText += `Belum ada pendaftaran nasabah baru hari ini. | `;
+                }
+                tickerText += `Total Angsuran Masuk Hari Ini: ${window.formatRupiah(angsuranHariIni)} 🌟`;
+                elRunning.innerText = tickerText;
+            }
+        }
+
+        window.tampilkanModal = function(judul, pesan, tipe) {
+            const modal = document.getElementById('modal-notif');
+            const titleEl = document.getElementById('modal-title');
+            const descEl = document.getElementById('modal-desc');
+            const icon = document.getElementById('modal-icon');
+
+            if (titleEl) titleEl.innerText = judul;
+            if (descEl) descEl.innerText = pesan;
+            
+            if(icon && tipe === 'success') {
+                icon.className = 'w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto text-xl shadow border border-emerald-500/20';
+                icon.innerHTML = '<i class="fa-solid fa-check"></i>';
+            }
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        };
+
+        window.tutupModal = function() {
+            const modal = document.getElementById('modal-notif');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        };
+
+        window.onload = function() {
+            window.hitungKalkulator();
+            initFirebase();
+        };
+    </script>
+</body>
+</html>
